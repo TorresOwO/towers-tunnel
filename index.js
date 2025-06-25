@@ -74,35 +74,22 @@ const tunnelManagement = async (req, res) => {
     console.log(`📥 Processing ${req.method} to ${req.url}`);
     console.log(`📥 Content-Type: ${contentType}`);
     console.log(`📥 Request URL: ${req.originalUrl}`);
+    console.log('📥 Received body size:', req.rawBody?.length ?? 0);
       // Para GET no hay body
-    let bodyToSend = '';
-    
-    if (req.method !== 'GET' && req.rawBody) {
-        // Para otros métodos, usar el body tal como está, sin codificar
-        bodyToSend = req.rawBody.toString('utf-8');
-        console.log(`📥 Body size: ${bodyToSend.length} chars`);
-    }
+    let bodyToSend = req.rawBody ?? '';
+
     
     const message = {
         type: 'request',
         id: requestId,
         method: req.method,
-        path: "/" + (req.params.path ?? [""]).join('/') + "/",
+        path: "/" + (req.params.path ?? [""]).join('/'),
         headers: req.headers,
         body: bodyToSend,
-        isBase64Encoded: false
     };
 
     ws.send(JSON.stringify(message));
     console.log(`🔄 Request sent to tunnel with ID: ${requestId}`);
-
-    const timeout = setTimeout(() => {
-        try {
-            res.status(504).send('Timeout del túnel');
-        } catch (e) {
-            console.error('Error sending timeout response:', e);
-        }
-    }, 120000); // 2 minutos de timeout
 
     const handler = (raw) => {
         try {
@@ -122,7 +109,6 @@ const tunnelManagement = async (req, res) => {
                 // Enviar el cuerpo de respuesta tal cual, sin procesamiento
                 console.log(`🔄 Sending response, size: ${data.body.length}`);
                 res.end(data.body);
-                clearTimeout(timeout);
                 ws.off('message', handler);
             }
         } catch (e) {
