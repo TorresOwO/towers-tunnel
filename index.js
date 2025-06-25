@@ -97,13 +97,18 @@ const tunnelManagement = async (req, res) => {
     console.log(`🔄 Request sent to tunnel with ID: ${requestId}`);
 
     const timeout = setTimeout(() => {
-        res.status(504).send('Timeout del túnel');
+        try {
+            res.status(504).send('Timeout del túnel');
+        } catch (e) {
+            console.error('Error sending timeout response:', e);
+        }
     }, 120000); // 2 minutos de timeout
 
     const handler = (raw) => {
         try {
             const data = JSON.parse(raw);
-            if (data.type === 'response' && data.id === requestId) {                // Sanitize headers to avoid Content-Length and Transfer-Encoding conflict
+            if (data.type === 'response' && data.id === requestId) {
+                // Sanitize headers to avoid Content-Length and Transfer-Encoding conflict
                 const sanitizedHeaders = sanitizeHeaders(data.headers || {});
                 
                 // Preparar la respuesta con el código de estado y los headers
