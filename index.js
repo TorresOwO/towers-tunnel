@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 app.get('', async (req, res) => {
     // send html with list of tunnels
-    const tunnelList = Array.from(tunnels.keys()).map(placaId => `<a href="/tunnel/${placaId}/">${placaId}</a>`).join('');
+    const tunnelList = Array.from(tunnels.keys()).map(placaId => `<div><a href="/tunnel/${placaId}/">${placaId}</a></div>`).join('');
     res.send(`<!DOCTYPE html>
 <html>
 <head>
